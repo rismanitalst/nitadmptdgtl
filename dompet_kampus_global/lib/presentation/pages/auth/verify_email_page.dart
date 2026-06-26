@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/error/failures.dart';
@@ -106,8 +105,6 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final email = FirebaseAuth.instance.currentUser?.email ?? 'email kamu';
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -167,10 +164,10 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text.rich(
+                    const Text.rich(
                       TextSpan(
                         text: 'Kami kirim kode 6 digit ke\n',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'PlusJakartaSans',
                           fontSize: 14.5,
                           color: AppColors.slate500,
@@ -178,8 +175,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                         ),
                         children: [
                           TextSpan(
-                            text: email,
-                            style: const TextStyle(
+                            text: 'email kamu',
+                            style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: AppColors.ink,
                             ),
