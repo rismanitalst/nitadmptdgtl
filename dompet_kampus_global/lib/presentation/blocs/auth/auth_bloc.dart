@@ -1,10 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/user_entity.dart';
-import '../../../domain/usecases/auth/verify_firebase_token_usecase.dart';
-import '../../../domain/usecases/auth/get_me_usecase.dart';
+import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/logout_usecase.dart';
-import '../../../domain/usecases/auth/send_otp_usecase.dart';
 import '../../../domain/repositories/auth_repository.dart';
 import '../../../core/error/failures.dart';
 
@@ -15,19 +13,14 @@ abstract class AuthEvent extends Equatable {
 }
 
 class AuthCheckRequested extends AuthEvent {}
-class AuthLoginWithFirebase extends AuthEvent {
-  final String firebaseToken;
-  AuthLoginWithFirebase(this.firebaseToken);
+class AuthLoginRequested extends AuthEvent {
+  final String email;
+  final String password;
+  AuthLoginRequested({required this.email, required this.password});
   @override
-  List<Object?> get props => [firebaseToken];
+  List<Object?> get props => [email, password];
 }
 class AuthLogoutRequested extends AuthEvent {}
-class AuthUpdateFcmToken extends AuthEvent {
-  final String fcmToken;
-  AuthUpdateFcmToken(this.fcmToken);
-  @override
-  List<Object?> get props => [fcmToken];
-}
 
 // States
 abstract class AuthState extends Equatable {
@@ -59,25 +52,21 @@ class AuthError extends AuthState {
 }
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final VerifyFirebaseTokenUsecase _verifyToken;
-  final GetMeUsecase _getMe;
+  final LoginUsecase _login;
   final LogoutUsecase _logout;
   final AuthRepository _authRepo;
 
   AuthBloc({
-    required VerifyFirebaseTokenUsecase verifyToken,
-    required GetMeUsecase getMe,
+    required LoginUsecase login,
     required LogoutUsecase logout,
     required AuthRepository authRepo,
-  })  : _verifyToken = verifyToken,
-        _getMe = getMe,
+  })  : _login = login,
         _logout = logout,
         _authRepo = authRepo,
         super(AuthInitial()) {
     on<AuthCheckRequested>(_onCheckRequested);
-    on<AuthLoginWithFirebase>(_onLoginWithFirebase);
+    on<AuthLoginRequested>(_onLogin);
     on<AuthLogoutRequested>(_onLogout);
-    on<AuthUpdateFcmToken>(_onUpdateFcm);
   }
 
   Future<void> _onCheckRequested(AuthCheckRequested event, Emitter<AuthState> emit) async {
@@ -94,8 +83,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
     final verified = await _authRepo.isAuthVerified();
     if (!verified) {
-      // Login berhasil tapi 2FA belum dikonfirmasi sebelum app ditutup →
-      // anggap sesi tidak valid, mulai ulang dari awal (login/Google chooser).
       await _authRepo.logout();
       emit(AuthUnauthenticated());
       return;
@@ -103,10 +90,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthAuthenticated(user));
   }
 
-  Future<void> _onLoginWithFirebase(AuthLoginWithFirebase event, Emitter<AuthState> emit) async {
+  Future<void> _onLogin(AuthLoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final result = await _verifyToken(event.firebaseToken);
+      final result = await _login(email: event.email, password: event.password);
       emit(AuthNeedsVerification(result.user, result.token));
     } on AuthFailure catch (e) {
       emit(AuthError(e.message));
@@ -122,9 +109,5 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLogout(AuthLogoutRequested event, Emitter<AuthState> emit) async {
     await _logout();
     emit(AuthUnauthenticated());
-  }
-
-  Future<void> _onUpdateFcm(AuthUpdateFcmToken event, Emitter<AuthState> emit) async {
-    await _authRepo.updateFcmToken(event.fcmToken);
   }
 }
