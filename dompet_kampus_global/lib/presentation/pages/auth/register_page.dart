@@ -1,9 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/error/failures.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../domain/usecases/auth/register_with_otp_usecase.dart';
+import '../../../domain/usecases/auth/register_usecase.dart';
 import '../../../injection/injection_container.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_field.dart';
@@ -28,25 +27,14 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _register() async {
     setState(() => _loading = true);
     try {
-      // 1. Buat akun di Firebase
-      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _email,
-        password: _pw,
-      );
-      await credential.user?.updateDisplayName(_name);
+      await sl<RegisterUsecase>()(name: _name, email: _email, password: _pw);
 
-      // 2. Ambil Firebase ID Token lalu kirim ke backend
-      final idToken = await credential.user?.getIdToken();
-      if (idToken == null) throw Exception('Gagal mendapatkan token Firebase');
-
-      await sl<RegisterWithOtpUsecase>()(idToken);
-
-      // 3. Backend sudah buat user + kirim OTP ke email → ke halaman verifikasi
+      // Backend sudah buat user + kirim OTP ke email → ke halaman verifikasi
       if (mounted) context.go('/verify-email');
-    } on FirebaseAuthException catch (e) {
+    } on AuthFailure catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Registrasi gagal.'), backgroundColor: AppColors.red),
+          SnackBar(content: Text(e.message), backgroundColor: AppColors.red),
         );
       }
     } on ServerFailure catch (e) {
