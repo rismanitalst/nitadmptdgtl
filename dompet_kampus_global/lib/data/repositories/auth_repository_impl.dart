@@ -13,9 +13,12 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._remote, this._local);
 
   @override
-  Future<({UserEntity user, String token})> verifyFirebaseToken(String firebaseToken) async {
+  Future<({UserEntity user, String token})> login({
+    required String email,
+    required String password,
+  }) async {
     try {
-      final result = await _remote.verifyFirebaseToken(firebaseToken);
+      final result = await _remote.login(email: email, password: password);
       await _local.saveToken(result.token);
       await _local.saveUserJson(result.user.toJsonString());
       await _local.saveAuthVerified(false);
@@ -30,9 +33,13 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<({UserEntity user, String token})> registerWithOtp(String firebaseToken) async {
+  Future<({UserEntity user, String token})> register({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
     try {
-      final result = await _remote.registerWithOtp(firebaseToken);
+      final result = await _remote.register(name: name, email: email, password: password);
       await _local.saveToken(result.token);
       await _local.saveUserJson(result.user.toJsonString());
       await _local.saveAuthVerified(false);
