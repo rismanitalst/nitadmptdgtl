@@ -119,6 +119,79 @@ class _LoginPageState extends State<LoginPage> {
                           isLoading: state is AuthLoading,
                         ),
                       ),
+                      const SizedBox(height: 20),
+                      // Divider
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: AppColors.line)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('atau', style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.slate400,
+                            )),
+                          ),
+                          Expanded(child: Divider(color: AppColors.line)),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // Google Sign-In Button
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, state) => SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: OutlinedButton(
+                            onPressed: state is AuthLoading
+                                ? null
+                                : () => context.read<AuthBloc>().add(AuthGoogleLoginRequested()),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              side: BorderSide(color: Colors.grey.shade300),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: state is AuthLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 22,
+                                        height: 22,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: Colors.grey.shade300),
+                                        ),
+                                        child: const Center(
+                                          child: Text(
+                                            'G',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF4285F4),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Text(
+                                        'Lanjutkan dengan Google',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

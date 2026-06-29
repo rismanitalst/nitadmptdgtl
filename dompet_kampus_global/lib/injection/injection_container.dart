@@ -18,6 +18,7 @@ import '../domain/usecases/account/get_account_usecase.dart';
 import '../domain/usecases/auth/login_usecase.dart';
 import '../domain/usecases/auth/logout_usecase.dart';
 import '../domain/usecases/auth/register_usecase.dart';
+import '../domain/usecases/auth/google_login_usecase.dart';
 import '../domain/usecases/auth/send_otp_usecase.dart';
 import '../domain/usecases/auth/verify_email_otp_usecase.dart';
 import '../domain/usecases/payment/payment_usecases.dart';
@@ -75,6 +76,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => RegisterUsecase(sl()));
   sl.registerLazySingleton(() => VerifyEmailOtpUsecase(sl()));
   sl.registerLazySingleton(() => LogoutUsecase(sl()));
+  sl.registerLazySingleton(() => GoogleLoginUsecase(sl()));
   sl.registerLazySingleton(() => SendOtpFirebaseUsecase(sl()));
   sl.registerLazySingleton(() => SendOtpEmailUsecase(sl()));
   sl.registerLazySingleton(() => ConfirmOtpUsecase(sl()));
@@ -93,6 +95,7 @@ Future<void> init() async {
   sl.registerFactory(() => AuthBloc(
         login: sl(),
         logout: sl(),
+        googleLogin: sl(),
         authRepo: sl(),
       ));
   sl.registerFactory(() => OtpBloc(
