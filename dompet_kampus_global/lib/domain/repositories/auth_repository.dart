@@ -10,6 +10,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
   });
+  Future<({UserEntity user, String token})> loginWithGoogle();
   Future<void> verifyEmailOtp(String code);
   Future<UserEntity> getMe();
   Future<void> updateFcmToken(String fcmToken);

@@ -91,6 +91,23 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<({UserEntity user, String token})> loginWithGoogle() async {
+    try {
+      final result = await _remote.loginWithGoogle();
+      await _local.saveToken(result.token);
+      await _local.saveUserJson(result.user.toJsonString());
+      await _local.saveAuthVerified(false);
+      return (user: result.user, token: result.token);
+    } on UnauthorizedException catch (e) {
+      throw AuthFailure(e.message, errorCode: e.errorCode);
+    } on ServerException catch (e) {
+      throw ServerFailure(e.message, errorCode: e.errorCode);
+    } on NetworkException catch (e) {
+      throw NetworkFailure(e.message);
+    }
+  }
+
+  @override
   Future<void> setAuthVerified(bool verified) => _local.saveAuthVerified(verified);
 
   @override
